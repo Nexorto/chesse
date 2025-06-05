@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍔 Juego Memoria Hamburguesas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .score {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .burger-name {
+            font-weight: bold;
+            margin-top: 5px;
+            font-size: 16px;
+        }
+
+        .status {
+            margin: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        .status.correct {
+            background: #f0f9ff;
+            border-color: #10b981;
+            color: #065f46;
+        }
+
+        .status.wrong {
+            background: #fef2f2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .status-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        .burger-construction {
+            padding: 20px;
+        }
+
+        .construction-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #374151;
+        }
+
+        .construction-area {
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 120px;
+        }
+
+        .empty-construction {
+            text-align: center;
+            color: #6b7280;
+            padding-top: 30px;
+            font-size: 14px;
+        }
+
+        .ingredient-button {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 6px 0;
+            border: 2px solid;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .ingredient-button:active {
+            transform: scale(0.95);
+        }
+
+        .ingredient-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ingredient-button:disabled:active {
+            transform: none;
+        }
+
+        /* Colores para ingredientes */
+        .pan { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+        .queso { background: #fde68a; color: #78350f; border-color: #f59e0b; }
+        .carne { background: #dc2626; color: white; border-color: #b91c1c; }
+        .lechuga { background: #86efac; color: #166534; border-color: #22c55e; }
+        .tomate { background: #fca5a5; color: #991b1b; border-color: #ef4444; }
+        .tocino { background: #fb923c; color: white; border-color: #ea580c; }
+        .pepinillos { background: #16a34a; color: white; border-color: #15803d; }
+        .cebolla { background: #c4b5fd; color: #5b21b6; border-color: #8b5cf6; }
+        .mayo { background: #f3f4f6; color: #374151; border-color: #d1d5db; }
+        .ketchup { background: #ef4444; color: white; border-color: #dc2626; }
+        .mostaza { background: #eab308; color: #713f12; border-color: #ca8a04; }
+        .salsa { background: #3b82f6; color: white; border-color: #2563eb; }
+
+        .ingredients-section {
+            padding: 20px;
+        }
+
+        .ingredients-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #374151;
+        }
+
+        .controls {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .control-button:active {
+            transform: scale(0.95);
+        }
+
+        .control-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .control-button:disabled:active {
+            transform: none;
+        }
+
+        .reset-button {
+            background: #6b7280;
+            color: white;
+        }
+
+        .reset-button:hover:not(:disabled) {
+            background: #4b5563;
+        }
+
+        .new-game-button {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+        }
+
+        .instructions {
+            background: #f9fafb;
+            padding: 15px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .instructions h4 {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .instructions ul {
+            list-style: none;
+        }
+
+        .instructions li {
+            margin: 4px 0;
+        }
+
+        .add-burger-section {
+            background: #f0f9ff;
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .add-burger-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1e40af;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.2s;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .add-burger-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-burger-button:active {
+            transform: scale(0.95);
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .toggle-form-button {
+            width: 100%;
+            padding: 12px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 15px;
+        }
+
+        .toggle-form-button:active {
+            transform: scale(0.95);
+        }
+
+        .burger-form {
+            display: none;
+        }
+
+        .burger-form.active {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 5px;
+                border-radius: 15px;
+            }
+        }
+        .burger-selector {
+    padding: 20px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    max-height: 400px;
+    overflow-y: auto;
+        }
+
+        .burger-selector-header {
+            margin-bottom: 15px;
+        }
+
+        .burger-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .burger-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .burger-option:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
+        }
+
+        .burger-option:active {
+            transform: scale(0.98);
+        }
+
+        .burger-option-name {
+            font-weight: bold;
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+
+        .burger-option-ingredients {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🍔 Memoria Burger</h1>
+            <div class="score">
+                <div>Puntaje: <span id="score">0</span>/<span id="attempts">0</span></div>
+                <div class="burger-name" id="currentBurger">Cargando...</div>
+            </div>
+        </div>
+
+        <!-- Game Status -->
+        <div id="gameStatus" style="display: none;"></div>
+        <!-- Game Mode Toggle -->
+        <div class="controls" style="padding: 15px 20px 0 20px;">
+            <button class="control-button" id="gameModeButton" style="background: #8b5cf6; color: white; font-size: 14px; padding: 12px;">
+                🎲 Modo: Aleatorio<br><small>Cambiar a Selección Manual</small>
+            </button>
+        </div>
+
+        <!-- Burger Selector -->
+        <div id="burgerSelector" class="burger-selector" style="display: none;">
+            <div class="burger-selector-header">
+                <h3 class="construction-title">🎯 Selecciona una hamburguesa:</h3>
+                <button class="control-button reset-button" id="cancelSelection" style="margin: 10px 20px; padding: 8px;">
+                    ❌ Cancelar
+                </button>
+            </div>
+            <div class="burger-list" id="burgerList"></div>
+        </div>
+        <!-- Burger Construction -->
+        <div class="burger-construction">
+            <h3 class="construction-title">Tu hamburguesa:</h3>
+            <div class="construction-area" id="constructionArea">
+                <p class="empty-construction">Toca los ingredientes para agregar</p>
+            </div>
+        </div>
+
+        <!-- Available Ingredients -->
+        <div class="ingredients-section">
+            <h3 class="ingredients-title">Ingredientes:</h3>
+            <div id="availableIngredients"></div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="controls">
+            <button class="control-button reset-button" id="resetButton">
+                🔄 Reintentar esta hamburguesa
+            </button>
+            <button class="control-button new-game-button" id="newGameButton">
+                🎲 Nueva hamburguesa
+            </button>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h4>📱 Cómo jugar:</h4>
+            <ul>
+                <li>• Toca ingredientes para agregar (orden de arriba a abajo)</li>
+                <li>• Toca ingredientes ya colocados para quitar</li>
+                <li>• Recuerda: arriba del queso = tapa, abajo de carne = base</li>
+            </ul>
+        </div>
+
+        <!-- Add New Burger Section -->
+        <div class="add-burger-section">
+            <button class="toggle-form-button" id="toggleFormButton">
+                ➕ Agregar Nueva Hamburguesa
+            </button>
+            
+            <div class="burger-form" id="burgerForm">
+                <h3 class="add-burger-title">🍔 Crear Nueva Hamburguesa</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Nombre de la hamburguesa:</label>
+                    <input type="text" class="form-input" id="burgerName" placeholder="Ej: Mi Hamburguesa Especial">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Ingredientes (de arriba hacia abajo):</label>
+                    <textarea class="form-textarea" id="burgerIngredients" placeholder="Escribe cada ingrediente en una línea nueva:&#10;KetChup&#10;Lechuga&#10;Queso&#10;Carne&#10;Tomate&#10;Pan"></textarea>
+                    <div class="form-help">
+                        💡 Tip: Escribe cada ingrediente en una línea separada, empezando por el de arriba
+                    </div>
+                </div>
+                
+                <button class="add-burger-button" id="addBurgerButton">
+                    Agregar Hamburguesa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BurgerGame {
+            constructor() {
+                this.burgers = {
+                    "Cheese Burguer": ["Pan", "Queso Carne", "Queso", "Pan"],
+                    "Cuarto de libra": ["KetChup", "Mostaza", "Pepinillos", "Queso", "Carne", "Cebolla Cuadritos", "Mostaza", "Ketchup"],
+                    "Jalapeño": ["Salsa Mil islas", "Jalapeño", "Queso", "Carne", "Cebolla Crispy", "Salsa Mil Islas"],
+                    "Bacon Bacon": ["KetChup", "Tocino", "Queso", "Carne", "Mayo"],
+                    "Big pipe": ["salsa big pipe", "pepinillos", "Queso", "Carne", "Lechuga", "Cebolla Cuadritos", "salsa big pipe"],
+                    "Oklahoma": ["salsa mil islas", "Queso", "Carne", "Cebolla Fina", "salsa mil islas"],
+                    "American cheese": ["Ketchup", "Pepinillos", "Cebolla en Aros", "Queso", "Carne", "Tomate", "Lechuga", "Mayonesa"],
+                    "Bacon jam": ["salsa alioli", "mermelada de tocino", "Queso", "Carne", "alioli"],
+                    "Manhattan": ["salsa mil islas", "cebolla grillada", "Queso", "Carne", "Pepinillos", "salsa mil islas"],
+                    "Spicy": ["salsa spicy", "Tocino", "Queso", "Carne", "cebolla en cuadritos", "salsa spicy"],
+                    "Tocino bbq": ["salsa bbq", "Tocino", "Queso", "Carne", "cebolla caramelizada", "salsa bbq"]
+                };
+
+                this.currentBurger = '';
+                this.correctOrder = [];
+                this.playerOrder = [];
+                this.availableIngredients = [];
+                this.gameState = 'playing';
+                this.score = 0;
+                this.attempts = 0;
+                this.gameMode = 'random'; // 'random' o 'manual'
+                this.isSelectingBurger = false;
+
+                this.initializeElements();
+                this.bindEvents();
+                this.loadCustomBurgers(); // Cargar hamburguesas personalizadas
+                this.startNewGame();
+            }
+
+            initializeElements() {
+                this.scoreElement = document.getElementById('score');
+                this.attemptsElement = document.getElementById('attempts');
+                this.currentBurgerElement = document.getElementById('currentBurger');
+                this.gameStatusElement = document.getElementById('gameStatus');
+                this.constructionAreaElement = document.getElementById('constructionArea');
+                this.availableIngredientsElement = document.getElementById('availableIngredients');
+                this.resetButton = document.getElementById('resetButton');
+                this.newGameButton = document.getElementById('newGameButton');
+                this.toggleFormButton = document.getElementById('toggleFormButton');
+                this.burgerForm = document.getElementById('burgerForm');
+                this.addBurgerButton = document.getElementById('addBurgerButton');
+                this.burgerNameInput = document.getElementById('burgerName');
+                this.burgerIngredientsInput = document.getElementById('burgerIngredients');
+                this.gameModeButton = document.getElementById('gameModeButton');
+                this.burgerSelectorElement = document.getElementById('burgerSelector');
+                this.burgerListElement = document.getElementById('burgerList');
+                this.cancelSelectionButton = document.getElementById('cancelSelection');
+
+            }
+
+            bindEvents() {
+                this.resetButton.addEventListener('click', () => this.resetCurrentGame());
+                this.newGameButton.addEventListener('click', () => this.startNewGame());
+                this.toggleFormButton.addEventListener('click', () => this.toggleForm());
+                this.addBurgerButton.addEventListener('click', () => this.addNewBurger());
+                this.gameModeButton.addEventListener('click', () => this.toggleGameMode());
+                this.cancelSelectionButton.addEventListener('click', () => this.cancelBurgerSelection());
+
+            }
+
+            startNewGame() {
+                const burgerNames = Object.keys(this.burgers);
+                const randomBurger = burgerNames[Math.floor(Math.random() * burgerNames.length)];
+                const ingredients = this.burgers[randomBurger];
+
+                this.currentBurger = randomBurger;
+                this.correctOrder = [...ingredients];
+                this.playerOrder = [];
+                this.availableIngredients = [...ingredients].sort(() => Math.random() - 0.5);
+                this.gameState = 'playing';
+
+                this.updateGameModeDisplay();            }
+
+            addIngredient(ingredient, index) {
+                if (this.gameState !== 'playing') return;
+
+                this.playerOrder.push(ingredient);
+                this.availableIngredients.splice(index, 1);
+                this.updateDisplay();
+                this.checkIfComplete();
+            }
+
+            removeIngredient(index) {
+                if (this.gameState !== 'playing') return;
+
+                const removedIngredient = this.playerOrder[index];
+                this.playerOrder.splice(index, 1);
+                this.availableIngredients.push(removedIngredient);
+                this.updateDisplay();
+            }
+
+            checkIfComplete() {
+                if (this.playerOrder.length === this.correctOrder.length) {
+                    this.checkAnswer();
+                }
+            }
+
+            checkAnswer() {
+                const isCorrect = this.playerOrder.every((ingredient, index) => 
+                    ingredient === this.correctOrder[index]
+                );
+
+                this.attempts++;
+                
+                if (isCorrect) {
+                    this.gameState = 'correct';
+                    this.score++;
+                } else {
+                    this.gameState = 'wrong';
+                }
+
+                this.updateDisplay();
+            }
+
+            resetCurrentGame() {
+                this.playerOrder = [];
+                this.availableIngredients = [...this.correctOrder].sort(() => Math.random() - 0.5);
+                this.gameState = 'playing';
+                this.updateDisplay();
+            }
+
+            getIngredientClass(ingredient) {
+                const ingredientLower = ingredient.toLowerCase();
+                
+                if (ingredientLower.includes('pan')) return 'pan';
+                if (ingredientLower.includes('queso')) return 'queso';
+                if (ingredientLower.includes('carne')) return 'carne';
+                if (ingredientLower.includes('lechuga')) return 'lechuga';
+                if (ingredientLower.includes('tomate')) return 'tomate';
+                if (ingredientLower.includes('tocino')) return 'tocino';
+                if (ingredientLower.includes('pepinillo')) return 'pepinillos';
+                if (ingredientLower.includes('cebolla')) return 'cebolla';
+                if (ingredientLower.includes('mayo')) return 'mayo';
+                if (ingredientLower.includes('ketchup')) return 'ketchup';
+                if (ingredientLower.includes('mostaza')) return 'mostaza';
+                if (ingredientLower.includes('salsa')) return 'salsa';
+                
+                return 'salsa'; // default
+            }
+
+            updateDisplay() {
+                // Update score
+                this.scoreElement.textContent = this.score;
+                this.attemptsElement.textContent = this.attempts;
+                this.currentBurgerElement.textContent = this.currentBurger;
+
+                // Update game status
+                this.updateGameStatus();
+
+                // Update construction area
+                this.updateConstructionArea();
+
+                // Update available ingredients
+                this.updateAvailableIngredients();
+
+                // Update button states
+                this.resetButton.disabled = this.gameState !== 'playing' && this.playerOrder.length === 0;
+            }
+
+            updateGameStatus() {
+                if (this.gameState === 'correct') {
+                    this.gameStatusElement.innerHTML = `
+                        <div class="status correct">
+                            <span class="status-icon">✅</span>
+                            <div>
+                                <p style="font-weight: bold;">¡Perfecto! 🎉</p>
+                                <p style="font-size: 12px;">Orden correcto</p>
+                            </div>
+                        </div>
+                    `;
+                    this.gameStatusElement.style.display = 'block';
+                } else if (this.gameState === 'wrong') {
+                    this.gameStatusElement.innerHTML = `
+                        <div class="status wrong">
+                            <span class="status-icon">❌</span>
+                            <div>
+                                <p style="font-weight: bold; margin-bottom: 5px;">¡Ups! Inténtalo de nuevo</p>
+                                <div style="font-size: 11px;">
+                                    <p><strong>Tu orden:</strong> ${this.playerOrder.join(' → ')}</p>
+                                    <p><strong>Correcto:</strong> ${this.correctOrder.join(' → ')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    this.gameStatusElement.style.display = 'block';
+                } else {
+                    this.gameStatusElement.style.display = 'none';
+                }
+            }
+
+            updateConstructionArea() {
+                if (this.playerOrder.length === 0) {
+                    this.constructionAreaElement.innerHTML = '<p class="empty-construction">Toca los ingredientes para agregar</p>';
+                } else {
+                    this.constructionAreaElement.innerHTML = this.playerOrder.map((ingredient, index) => 
+                        `<button class="ingredient-button ${this.getIngredientClass(ingredient)}" onclick="game.removeIngredient(${index})" ${this.gameState !== 'playing' ? 'disabled' : ''}>
+                            ${ingredient}
+                        </button>`
+                    ).join('');
+                }
+            }
+
+            updateAvailableIngredients() {
+                this.availableIngredientsElement.innerHTML = this.availableIngredients.map((ingredient, index) => 
+                    `<button class="ingredient-button ${this.getIngredientClass(ingredient)}" onclick="game.addIngredient('${ingredient}', ${index})" ${this.gameState !== 'playing' ? 'disabled' : ''}>
+                        ${ingredient}
+                    </button>`
+                ).join('');
+            }
+
+            toggleForm() {
+                this.burgerForm.classList.toggle('active');
+                const isActive = this.burgerForm.classList.contains('active');
+                this.toggleFormButton.textContent = isActive ? '❌ Cerrar Formulario' : '➕ Agregar Nueva Hamburguesa';
+            }
+
+            addNewBurger() {
+                const name = this.burgerNameInput.value.trim();
+                const ingredientsText = this.burgerIngredientsInput.value.trim();
+
+                if (!name || !ingredientsText) {
+                    alert('Por favor completa el nombre y los ingredientes de la hamburguesa');
+                    return;
+                }
+
+                // Procesar ingredientes (dividir por líneas y limpiar)
+                const ingredients = ingredientsText
+                    .split('\n')
+                    .map(ingredient => ingredient.trim())
+                    .filter(ingredient => ingredient.length > 0);
+
+                if (ingredients.length < 2) {
+                    alert('La hamburguesa debe tener al menos 2 ingredientes');
+                    return;
+                }
+
+                // Verificar si ya existe una hamburguesa con ese nombre
+                if (this.burgers[name]) {
+                    const overwrite = confirm(`Ya existe una hamburguesa llamada "${name}". ¿Quieres reemplazarla?`);
+                    if (!overwrite) {
+                        return;
+                    }
+                }
+
+                // Agregar la nueva hamburguesa
+                this.burgers[name] = ingredients;
+
+                // Limpiar formulario
+                this.burgerNameInput.value = '';
+                this.burgerIngredientsInput.value = '';
+                this.toggleForm();
+
+                // Guardar en localStorage para persistencia
+                this.saveBurgers();
+
+                // Mensaje de éxito
+                alert(`¡Hamburguesa "${name}" agregada exitosamente! 🍔\nIngredientes: ${ingredients.join(', ')}`);
+            }
+
+            saveBurgers() {
+                try {
+                    const customBurgers = {};
+                    const originalBurgers = {
+                        "Cheese Burguer": ["Pan", "Queso Carne", "Queso", "Pan"],
+                        "Cuarto de libra": ["KetChup", "Mostaza", "Pepinillos", "Queso", "Carne", "Cebolla Cuadritos", "Mostaza", "Ketchup"],
+                        "Jalapeño": ["Salsa Mil islas", "Jalapeño", "Queso", "Carne", "Cebolla Crispy", "Salsa Mil Islas"],
+                        "Bacon Bacon": ["KetChup", "Tocino", "Queso", "Carne", "Mayo"],
+                        "Big pipe": ["salsa big pipe", "pepinillos", "Queso", "Carne", "Lechuga", "Cebolla Cuadritos", "salsa big pipe"],
+                        "Oklahoma": ["salsa mil islas", "Queso", "Carne", "Cebolla Fina", "salsa mil islas"],
+                        "American cheese": ["Ketchup", "Pepinillos", "Cebolla en Aros", "Queso", "Carne", "Tomate", "Lechuga", "Mayonesa"],
+                        "Bacon jam": ["salsa alioli", "mermelada de tocino", "Queso", "Carne", "alioli"],
+                        "Manhattan": ["salsa mil islas", "cebolla grillada", "Queso", "Carne", "Pepinillos", "salsa mil islas"],
+                        "Spicy": ["salsa spicy", "Tocino", "Queso", "Carne", "cebolla en cuadritos", "salsa spicy"],
+                        "Tocino bbq": ["salsa bbq", "Tocino", "Queso", "Carne", "cebolla caramelizada", "salsa bbq"]
+                    };
+
+                    // Guardar solo las hamburguesas personalizadas
+                    for (const [name, ingredients] of Object.entries(this.burgers)) {
+                        if (!originalBurgers[name]) {
+                            customBurgers[name] = ingredients;
+                        }
+                    }
+
+                    if (typeof(Storage) !== "undefined") {
+                        localStorage.setItem('customBurgers', JSON.stringify(customBurgers));
+                    }
+                } catch (error) {
+                    console.log('No se pudo guardar en localStorage:', error);
+                }
+            }
+
+            loadCustomBurgers() {
+                try {
+                    if (typeof(Storage) !== "undefined") {
+                        const saved = localStorage.getItem('customBurgers');
+                        if (saved) {
+                            const customBurgers = JSON.parse(saved);
+                            // Agregar hamburguesas personalizadas a la lista
+                            Object.assign(this.burgers, customBurgers);
+                        }
+                    }
+                } catch (error) {
+                    console.log('No se pudo cargar desde localStorage:', error);
+                }
+            }
+// NUEVOS MÉTODOS PARA AGREGAR A LA CLASE BurgerGame:
+
+toggleGameMode() {
+    this.gameMode = this.gameMode === 'random' ? 'manual' : 'random';
+    this.updateGameModeDisplay();
+}
+
+updateGameModeDisplay() {
+    const modeText = this.gameMode === 'random' ? '🎲 Modo: Aleatorio' : '🎯 Modo: Seleccionar';
+    const nextModeText = this.gameMode === 'random' ? 'Cambiar a Selección Manual' : 'Cambiar a Aleatorio';
+    
+    this.gameModeButton.innerHTML = `${modeText}<br><small>${nextModeText}</small>`;
+    
+    // Actualizar texto del botón de nueva hamburguesa
+    if (this.gameMode === 'manual') {
+        this.newGameButton.innerHTML = '🎯 Seleccionar hamburguesa';
+    } else {
+        this.newGameButton.innerHTML = '🎲 Nueva hamburguesa';
+    }
+}
+
+startNewGame() {
+    if (this.gameMode === 'manual' && !this.isSelectingBurger) {
+        this.showBurgerSelector();
+        return;
+    }
+    
+    if (this.gameMode === 'random' || this.isSelectingBurger) {
+        const burgerNames = Object.keys(this.burgers);
+        const randomBurger = burgerNames[Math.floor(Math.random() * burgerNames.length)];
+        this.startGameWithBurger(randomBurger);
+    }
+}
+
+startGameWithBurger(burgerName) {
+    const ingredients = this.burgers[burgerName];
+    
+    this.currentBurger = burgerName;
+    this.correctOrder = [...ingredients];
+    this.playerOrder = [];
+    this.availableIngredients = [...ingredients].sort(() => Math.random() - 0.5);
+    this.gameState = 'playing';
+    this.isSelectingBurger = false;
+    
+    this.hideBurgerSelector();
+    this.updateDisplay();
+}
+
+showBurgerSelector() {
+    this.isSelectingBurger = true;
+    this.burgerSelectorElement.style.display = 'block';
+    this.updateBurgerList();
+    
+    // Ocultar elementos del juego
+    document.querySelector('.burger-construction').style.display = 'none';
+    document.querySelector('.ingredients-section').style.display = 'none';
+    this.resetButton.style.display = 'none';
+}
+
+hideBurgerSelector() {
+    this.burgerSelectorElement.style.display = 'none';
+    
+    // Mostrar elementos del juego
+    document.querySelector('.burger-construction').style.display = 'block';
+    document.querySelector('.ingredients-section').style.display = 'block';
+    this.resetButton.style.display = 'block';
+}
+
+updateBurgerList() {
+    const burgerNames = Object.keys(this.burgers).sort();
+    
+    this.burgerListElement.innerHTML = burgerNames.map(name => {
+        const ingredients = this.burgers[name];
+        return `
+            <div class="burger-option" onclick="game.selectBurger('${name}')">
+                <div class="burger-option-name">${name}</div>
+                <div class="burger-option-ingredients">${ingredients.join(' → ')}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+selectBurger(burgerName) {
+    this.startGameWithBurger(burgerName);
+}
+
+cancelBurgerSelection() {
+    this.isSelectingBurger = false;
+    this.hideBurgerSelector();
+}
+          }
+
+        // Initialize game when page loads
+        let game;
+        document.addEventListener('DOMContentLoaded', () => {
+            game = new BurgerGame();
+        });
+    </script>
+</body>
+</html>
